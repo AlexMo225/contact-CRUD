@@ -20,19 +20,41 @@
 </template>
 
 <script>
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+
 export default {
-    data() {
-        return {
-            contact: {},
+    name: "ContactDetails",
+    setup() {
+        const route = useRoute();
+        const contact = ref({});
+
+        const loadContact = (id) => {
+            const contacts = JSON.parse(
+                localStorage.getItem("contacts") || "[]"
+            );
+            const existingContact = contacts.find(
+                (contact) => contact.id === Number(id)
+            );
+            if (existingContact) {
+                contact.value = { ...existingContact };
+            }
         };
-    },
-    mounted() {
-        const id = this.$route.params.id;
-        const contacts = JSON.parse(localStorage.getItem("contacts") || "[]");
-        const contact = contacts.find((contact) => contact.id === parseInt(id));
-        if (contact) {
-            this.contact = contact;
-        }
+
+        onMounted(() => {
+            loadContact(route.params.id);
+        });
+
+        watch(
+            () => route.params.id,
+            (newId) => {
+                loadContact(newId);
+            }
+        );
+
+        return {
+            contact,
+        };
     },
 };
 </script>

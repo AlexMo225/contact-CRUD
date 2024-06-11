@@ -2,10 +2,10 @@
     <ion-page>
         <ion-header>
             <ion-toolbar>
-                <ion-title>Contacts</ion-title>
+                <ion-title>Contact registration</ion-title>
                 <ion-buttons slot="end">
-                    <router-link to="/create">
-                        <ion-button>Ajouter un contact</ion-button>
+                    <router-link :to="{ name: 'CreateContact' }">
+                        <ion-button>Add contact</ion-button>
                     </router-link>
                 </ion-buttons>
             </ion-toolbar>
@@ -16,19 +16,36 @@
                 @ionInput="filterContacts"
             ></ion-searchbar>
             <ion-list>
-                <ion-item v-for="contact in filteredContacts" :key="contact.id">
-                    <ion-label>Nom: {{ contact.name }}</ion-label>
-                    <ion-label>Email: {{ contact.email }}</ion-label>
-                    <ion-label>Numéro: {{ contact.phone }}</ion-label>
-                    <ion-button slot="end" @click.stop="editContact(contact.id)"
-                        >Modifier</ion-button
+                <ion-item
+                    v-for="contact in filteredContacts"
+                    :key="contact.id"
+                    button
+                    @click="viewContact(contact.id)"
+                >
+                <ion-label>
+                        <div>
+                            <strong>Name:</strong> {{ contact.name }}
+                        </div>
+                        <div>
+                            <strong>Email:</strong> {{ contact.email }}
+                        </div>
+                        <div>
+                            <strong>Phone:</strong> {{ contact.phone }}
+                        </div>
+                    </ion-label>
+                    <ion-button
+                        slot="end"
+                        @click.stop="editContact(contact.id)"
                     >
+                        Modify
+                    </ion-button>
                     <ion-button
                         slot="end"
                         color="danger"
                         @click.stop="deleteContact(contact.id)"
-                        >Supprimer</ion-button
                     >
+                        Delete
+                    </ion-button>
                 </ion-item>
             </ion-list>
         </ion-content>
@@ -49,7 +66,7 @@ import {
     IonItem,
     IonLabel,
 } from "@ionic/vue";
-import { RouterLink } from "vue-router"; // Correction ici
+import { RouterLink } from "vue-router";
 
 export default {
     components: {
@@ -64,7 +81,7 @@ export default {
         IonList,
         IonItem,
         IonLabel,
-        RouterLink, // Modification ici
+        RouterLink,
     },
     data() {
         return {
@@ -75,6 +92,10 @@ export default {
     },
     mounted() {
         this.loadContacts();
+        window.addEventListener("contact-updated", this.loadContacts);
+    },
+    beforeUnmount() {
+        window.removeEventListener("contact-updated", this.loadContacts);
     },
     methods: {
         loadContacts() {
@@ -92,8 +113,11 @@ export default {
                     contact.phone.toLowerCase().includes(query)
             );
         },
+        // viewContact(id) {
+        //     this.$router.push({ name: "ContactDetails", params: { id } });
+        // },
         editContact(id) {
-            this.$router.push(`/${id}/edit`);
+            this.$router.push({ name: "EditContact", params: { id } });
         },
         deleteContact(id) {
             this.contacts = this.contacts.filter(
@@ -101,6 +125,7 @@ export default {
             );
             this.filteredContacts = this.contacts;
             localStorage.setItem("contacts", JSON.stringify(this.contacts));
+            window.dispatchEvent(new CustomEvent("contact-updated"));
         },
     },
 };

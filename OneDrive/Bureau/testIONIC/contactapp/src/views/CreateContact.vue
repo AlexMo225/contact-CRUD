@@ -29,8 +29,10 @@
                     ></ion-input>
                 </ion-item>
             </ion-list>
-            <ion-buttons expand="full">
-                <ion-button @click="addContact">Add</ion-button>
+            <ion-buttons class="button-container" expand="full">
+                <ion-button class="green-button" @click="addContact"
+                    >Add Contact</ion-button
+                >
             </ion-buttons>
         </ion-content>
     </ion-page>
@@ -74,13 +76,37 @@ export default {
     },
     methods: {
         addContact() {
+            if (
+                !this.contact.name ||
+                !this.contact.email ||
+                !this.contact.phone
+            ) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
             const contacts = JSON.parse(
                 localStorage.getItem("contacts") || "[]"
             );
             contacts.push(this.contact);
             localStorage.setItem("contacts", JSON.stringify(contacts));
+            window.dispatchEvent(new CustomEvent("contact-updated"));
             this.$router.push("/home");
         },
     },
 };
 </script>
+<style scoped>
+.button-container {
+    margin-top: 20px; 
+    display: flex;
+    justify-content: center; 
+}
+
+.green-button {
+    --background: green;
+    --background-activated: darkgreen;
+    --background-focused: darkgreen;
+    --background-hover: darkgreen;
+}
+</style>
